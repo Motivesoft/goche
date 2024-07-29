@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
+
+var applicationName string = "gochu"
+var versionName string = "unknown"
 
 func main() {
 	inputFile := flag.String("i", "", "filename of UCI commands for testing purposes")
@@ -30,7 +34,7 @@ func main() {
 	}
 
 	if *versionFlag {
-		fmt.Println("Version 0.0.1")
+		fmt.Printf("%s version %s (%s/%s)\n", applicationName, versionName, runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
