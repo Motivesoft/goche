@@ -60,6 +60,9 @@ func main() {
 		scanner = bufio.NewScanner(file)
 	}
 
+	// Create the environment for the UCI engine
+	uciConfiguration := uci.NewConfiguration()
+
 	// Input loop
 	for {
 		if !scanner.Scan() {
@@ -70,7 +73,7 @@ func main() {
 		input := scanner.Text()
 
 		// Process commands until one of them tells us to break out of loop
-		if !uci.ProcessCommand(input) {
+		if !uci.ProcessCommand(uciConfiguration, input) {
 			break
 		}
 	}

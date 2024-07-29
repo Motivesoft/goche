@@ -1,11 +1,28 @@
 package uci
 
-import "strings"
+import (
+	"goche/utility"
+	"log"
+)
 
-type Command func(string) bool
+type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
 	"quit": quitCommand,
+	"uci":  uciCommand,
+}
+
+type configuration struct {
+	debug bool
+}
+
+// NewConfiguration creates a new configuration object with the debug flag set to false.
+//
+// Returns a pointer to the newly created configuration object.
+func NewConfiguration() *configuration {
+	return &configuration{
+		debug: true,
+	}
 }
 
 // ProcessCommand processes a UCI command by extracting the command and arguments
@@ -16,42 +33,28 @@ var commands = map[string]Command{
 //
 // Returns:
 // - bool: true if processing can continue with subsequent commands, false otherwise (e.g. to quit).
-func ProcessCommand(input string) bool {
-	command, arguments := nextWord(input)
+func ProcessCommand(configuration *configuration, input string) bool {
+	command, arguments := utility.SplitNextWord(input)
 
 	if command == "" || commands[command] == nil {
 		// Illegal commands are silently ignored
 		return true
 	}
 
+	if configuration.debug {
+		log.Printf("Received %s", command)
+	}
+
 	// Call the appropriate command handler
-	return commands[command](arguments)
+	return commands[command](configuration, arguments)
 }
 
 // Process 'quit'
-func quitCommand(string) bool {
+func quitCommand(configuration *configuration, _ string) bool {
 	return false
 }
 
-// Helper function that takes a string and returns the first word and the remaining text
-func nextWord(input string) (string, string) {
-	input = strings.TrimSpace(input)
-
-	if input == "" {
-		return "", ""
-	}
-
-	// Find the first space
-	spaceIndex := strings.Index(input, " ")
-
-	if spaceIndex == -1 {
-		// If there is no space, the entire input is the first word
-		return input, ""
-	}
-
-	// Split the input into the first word and the remaining text
-	firstWord := input[:spaceIndex]
-	remainingText := strings.TrimSpace(input[spaceIndex+1:])
-
-	return firstWord, remainingText
+// Process 'uci'
+func uciCommand(configuration *configuration, _ string) bool {
+	return true
 }
