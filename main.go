@@ -7,13 +7,14 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 )
 
+// These may be replaced at build time
 var applicationName string = "gochu"
 var versionName string = "unknown"
 
 func main() {
+	// Configure the small number of command line arguments
 	inputFile := flag.String("i", "", "filename of UCI commands for testing purposes")
 	helpFlag := flag.Bool("h", false, "show this help message and exit")
 	versionFlag := flag.Bool("v", false, "print version and exit")
@@ -28,11 +29,13 @@ func main() {
 
 	flag.Parse()
 
+	// Handle -h
 	if *helpFlag {
 		flag.Usage()
 		os.Exit(0)
 	}
 
+	// Handle -v
 	if *versionFlag {
 		fmt.Printf("%s version %s (%s/%s)\n", applicationName, versionName, runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
@@ -54,22 +57,22 @@ func main() {
 		scanner = bufio.NewScanner(file)
 	}
 
-	fmt.Println("Enter text (type 'quit' to exit):")
-
+	// Input loop
 	for {
 		if !scanner.Scan() {
 			break
 		}
+
+		// Read the input
 		input := scanner.Text()
 
-		if strings.TrimSpace(input) == "quit" {
-			fmt.Println("Exiting...")
+		// Process commands until one of them tells us to break out of loop
+		if !processCommand(input) {
 			break
 		}
-
-		fmt.Println("You entered:", input)
 	}
 
+	// Report operational errors
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading input:", err)
 	}
