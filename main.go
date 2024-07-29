@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	// Internal references
+	"goche/uci"
 )
 
 // These may be replaced at build time
@@ -67,7 +70,7 @@ func main() {
 		input := scanner.Text()
 
 		// Process commands until one of them tells us to break out of loop
-		if !processCommand(input) {
+		if !uci.ProcessCommand(input) {
 			break
 		}
 	}

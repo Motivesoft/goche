@@ -1,4 +1,4 @@
-package main
+package uci
 
 import "strings"
 
@@ -8,11 +8,15 @@ var commands = map[string]Command{
 	"quit": quitCommand,
 }
 
-func quitCommand(string) bool {
-	return false
-}
-
-func processCommand(input string) bool {
+// ProcessCommand processes a UCI command by extracting the command and arguments
+// from the input string and executing the corresponding command function.
+//
+// Parameters:
+// - input: the input string containing the UCI command and arguments.
+//
+// Returns:
+// - bool: true if processing can continue with subsequent commands, false otherwise (e.g. to quit).
+func ProcessCommand(input string) bool {
 	command, arguments := nextWord(input)
 
 	if command == "" || commands[command] == nil {
@@ -20,9 +24,16 @@ func processCommand(input string) bool {
 		return true
 	}
 
+	// Call the appropriate command handler
 	return commands[command](arguments)
 }
 
+// Process 'quit'
+func quitCommand(string) bool {
+	return false
+}
+
+// Helper function that takes a string and returns the first word and the remaining text
 func nextWord(input string) (string, string) {
 	input = strings.TrimSpace(input)
 
