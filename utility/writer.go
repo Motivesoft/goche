@@ -6,15 +6,15 @@ import "fmt"
 type Writer interface {
 	WriteUciOk()
 	WriteInfoString(information string)
-	WriteId(applicationName string, authorName string)
+	WriteId(engineName string, authorName string)
 }
 
 // Define a concrete type that implements the Writer interface
 type ConsoleWriter struct{}
 
 // Implement the Write method for ConsoleWriter
-func (cw ConsoleWriter) WriteId(applicationName string, authorName string) {
-	cw.write("id name " + applicationName)
+func (cw ConsoleWriter) WriteId(engineName string, authorName string) {
+	cw.write("id name " + engineName)
 	cw.write("id author " + authorName)
 }
 

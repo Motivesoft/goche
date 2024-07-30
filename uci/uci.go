@@ -78,7 +78,7 @@ func quitCommand(configuration *configuration, _ string) bool {
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
 
-	configuration.writer.WriteId(ApplicationName, AuthorName) //configuration.authorName)
+	configuration.writer.WriteId(GetEngineName(), GetAuthorName()) //configuration.authorName)
 	configuration.writer.WriteUciOk()
 
 	return true

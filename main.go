@@ -36,7 +36,7 @@ func main() {
 
 	// Handle -v
 	if *versionFlag {
-		fmt.Printf("%s version %s (%s/%s)\n", uci.ApplicationName, uci.VersionName, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("%s version %s (%s/%s)\n", uci.GetEngineName(), uci.GetVersionName(), runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
