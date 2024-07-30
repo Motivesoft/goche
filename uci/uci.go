@@ -163,34 +163,24 @@ func perftCommand(configuration *configuration, arguments string) bool {
 	// Support:
 	// - perft [depth]         - perform a search using a depth and the standard start position
 	// - perft [depth] [fen]   - perform a search using a depth and FEN string
-	if depth, err := strconv.Atoi(keyword); err == nil {
+	// - perft fen [fen]       - perform a search using a FEN string containing expected results
+	// - perft file [filename] - perform searches read from a file as FEN strings containing expected results
+	depth, err := strconv.Atoi(keyword)
+	if err == nil {
 		if values == "" {
 			values = FenStartingPosition
 		}
 
-		if err = PerftDepth(depth, values); err != nil {
-			logger.Error("Error performing perft: %s", err)
-		}
-	} else if values != "" {
-		// Support:
-		// - perft fen [fen]       - perform a search using a FEN string containing expected results
-		// - perft file [filename] - perform searches read from a file as FEN strings containing expected results
-		switch keyword {
-		case "fen":
-			err = PerftWithFen(values)
-
-		case "file":
-			err = PerftWithFile(values)
-
-		default:
-			err = fmt.Errorf("unknown command: %s", keyword)
-		}
-
-		if err != nil {
-			logger.Error("Error performing perft: %s", err)
-		}
+		err = PerftDepth(depth, values)
+	} else if keyword == "fen" {
+		err = PerftWithFen(values)
+	} else if keyword == "file" {
+		err = PerftWithFile(values)
 	} else {
-		err = fmt.Errorf("incomplete or invalid command: %s", arguments)
+		err = fmt.Errorf("unknown command: %s", keyword)
+	}
+
+	if err != nil {
 		logger.Error("Error performing perft: %s", err)
 	}
 
