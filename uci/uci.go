@@ -11,12 +11,17 @@ import (
 type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
-	"debug":     debugCommand,
-	"quit":      quitCommand,
-	"isready":   isreadyCommand,
-	"register":  registerCommand,
-	"setoption": setoptionCommand,
-	"uci":       uciCommand,
+	"debug":      debugCommand,
+	"go":         goCommand,
+	"isready":    isreadyCommand,
+	"ponderhit":  ponderhitCommand,
+	"position":   positionCommand,
+	"quit":       quitCommand,
+	"register":   registerCommand,
+	"setoption":  setoptionCommand,
+	"stop":       stopCommand,
+	"uci":        uciCommand,
+	"ucinewgame": ucinewgameCommand,
 }
 
 type configuration struct {
@@ -103,11 +108,8 @@ func debugCommand(configuration *configuration, arguments string) bool {
 	return true
 }
 
-// Process 'quit'
-func quitCommand(configuration *configuration, _ string) bool {
-	// TODO - check for, and terminate running threads etc
-
-	return false
+func goCommand(configuration *configuration, _ string) bool {
+	return true
 }
 
 func isreadyCommand(configuration *configuration, _ string) bool {
@@ -117,37 +119,19 @@ func isreadyCommand(configuration *configuration, _ string) bool {
 	return true
 }
 
-func setoptionCommand(configuration *configuration, arguments string) bool {
-	// Currently no options are supported
-	optionName, _ := utility.SplitNextWord(arguments)
-	if optionName != "" {
-		logger.Warn("Unexpected attempt to configure '%s'", optionName)
-	} else {
-		logger.Error("Malformed setoption command")
-	}
-
+func ponderhitCommand(configuration *configuration, _ string) bool {
 	return true
 }
 
-// Process 'uci'
-func uciCommand(configuration *configuration, _ string) bool {
-	if configuration.uciok {
-		// Log as error as this is a non-conformance with the UCI spec
-		logger.Error("Ignoring duplicate 'uci' command")
-	}
-
-	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
-
-	// TODO write any options we have
-
-	utility.WriteUciOk()
-
-	// Do the registration stuff
-	checkRegistration(configuration)
-
-	configuration.uciok = true
-
+func positionCommand(configuration *configuration, _ string) bool {
 	return true
+}
+
+// Process 'quit'
+func quitCommand(configuration *configuration, _ string) bool {
+	// TODO - check for, and terminate running threads etc
+
+	return false
 }
 
 func registerCommand(configuration *configuration, arguments string) bool {
@@ -166,11 +150,50 @@ func registerCommand(configuration *configuration, arguments string) bool {
 		configuration.registrationStatus = status.Ok
 	}
 
-	// Reset things
-	configuration.registrationWarningIssued = false
-
 	// Confirm the change in status
-	utility.WriteRegistrationStatus(configuration.registrationStatus)
+	checkRegistration(configuration)
+	return true
+}
+
+func setoptionCommand(configuration *configuration, arguments string) bool {
+	// Currently no options are supported
+	optionName, _ := utility.SplitNextWord(arguments)
+	if optionName != "" {
+		logger.Warn("Unexpected attempt to configure '%s'", optionName)
+	} else {
+		logger.Error("Malformed setoption command")
+	}
+
+	return true
+}
+
+func stopCommand(configuration *configuration, _ string) bool {
+	return true
+}
+
+// Process 'uci'
+func uciCommand(configuration *configuration, _ string) bool {
+	if configuration.uciok {
+		// Log as error as this is a non-conformance with the UCI spec
+		logger.Error("Ignoring duplicate 'uci' command")
+	}
+
+	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
+
+	// TODO write any options we have
+
+	utility.WriteUciOk()
+
+	// Do the registration stuff
+	checkRegistration(configuration)
+	checkCopyProtection(configuration)
+
+	configuration.uciok = true
+
+	return true
+}
+
+func ucinewgameCommand(configuration *configuration, _ string) bool {
 	return true
 }
 
@@ -184,5 +207,21 @@ func checkRegistration(configuration *configuration) {
 
 		// Notify the change in status
 		utility.WriteRegistrationStatus(configuration.registrationStatus)
+	}
+
+	// Reset things
+	configuration.registrationWarningIssued = false
+}
+
+func checkCopyProtection(configuration *configuration) {
+	utility.WriteCopyProtectionStatus(configuration.copyProtectionStatus)
+
+	if configuration.copyProtectionStatus == status.Checking {
+
+		// TODO - check for any copy protection issues and set the status flag accordingly
+		configuration.copyProtectionStatus = status.Ok
+
+		// Notify the change in status
+		utility.WriteCopyProtectionStatus(configuration.copyProtectionStatus)
 	}
 }

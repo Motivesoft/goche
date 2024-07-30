@@ -24,6 +24,11 @@ func WriteReadyOk() {
 	write("readyok")
 }
 
+// Write the copy protection status
+func WriteCopyProtectionStatus(status status.Status) {
+	write("copyprotection %s", status)
+}
+
 // Write the registration status
 func WriteRegistrationStatus(status status.Status) {
 	write("registration %s", status)
