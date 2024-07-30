@@ -1,8 +1,10 @@
 package uci
 
 import (
-	"goche/utility"
 	"log"
+
+	// Internal references
+	"goche/utility"
 )
 
 type Command func(*configuration, string) bool
@@ -13,22 +15,26 @@ var commands = map[string]Command{
 	"uci":   uciCommand,
 }
 
+type Status string
+
+const (
+	Ok       Status = "ok"
+	Error    Status = "error"
+	Checking Status = "checking"
+)
+
 type configuration struct {
-	applicationName string
-	authorName      string
-	debug           bool
-	writer          utility.Writer
+	debug  bool
+	writer utility.Writer
 }
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
 //
 // Returns a pointer to the newly created configuration object.
-func NewConfiguration(applicationName string, authorName string) *configuration {
+func NewConfiguration() *configuration {
 	return &configuration{
-		applicationName: applicationName,
-		authorName:      authorName,
-		debug:           true,
-		writer:          utility.ConsoleWriter{},
+		debug:  true,
+		writer: utility.ConsoleWriter{},
 	}
 }
 
@@ -72,7 +78,7 @@ func quitCommand(configuration *configuration, _ string) bool {
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
 
-	configuration.writer.WriteId(configuration.applicationName, configuration.authorName)
+	configuration.writer.WriteId(ApplicationName, AuthorName) //configuration.authorName)
 	configuration.writer.WriteUciOk()
 
 	return true

@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set NAME=gochu
+set NAME=goche
 
 for /F "tokens=*" %%g in ('type version') do (
   set VERSION=%%g
@@ -24,5 +24,5 @@ for %%p in (%PLATFORMS%) do (
     set GOOS=%%p
     set GOARCH=amd64
     
-    go build -ldflags "-X main.applicationName=%NAME% -X main.versionName=%VERSION%" -o %NAME%-!GOOS!-!GOARCH!-%VERSION%!EXTENSION! .
+    go build -ldflags "-X goche/uci.ApplicationName=%NAME% -X goche/uci.VersionName=%VERSION%" -o %NAME%-!GOOS!-!GOARCH!-%VERSION%!EXTENSION! .
 )

@@ -12,11 +12,6 @@ import (
 	"goche/uci"
 )
 
-// These may be replaced at build time
-var applicationName string = "gochu"
-var authorName string = "Ian Brown"
-var versionName string = "unknown"
-
 func main() {
 	// Configure the small number of command line arguments
 	inputFile := flag.String("i", "", "filename of UCI commands for testing purposes")
@@ -41,7 +36,7 @@ func main() {
 
 	// Handle -v
 	if *versionFlag {
-		fmt.Printf("%s version %s (%s/%s)\n", applicationName, versionName, runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("%s version %s (%s/%s)\n", uci.ApplicationName, uci.VersionName, runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
@@ -62,7 +57,7 @@ func main() {
 	}
 
 	// Create the environment for the UCI engine
-	uciConfiguration := uci.NewConfiguration(applicationName, authorName)
+	uciConfiguration := uci.NewConfiguration()
 
 	// Input loop
 	for {
