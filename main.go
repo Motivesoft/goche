@@ -4,13 +4,13 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 
 	// Internal references
 	"goche/identification"
+	"goche/logger"
 	"goche/uci"
 )
 
@@ -47,8 +47,9 @@ func main() {
 	}
 
 	// Log to stderr or the file specified
+	logger.DebugMode = *debugFlag
 	if *logFile == "" {
-		log.SetOutput(os.Stderr)
+		logger.SetOutput(os.Stderr)
 	} else {
 		// Optionally, add 'os.O_APPEND|' to open the file in append mode
 		logFile, err := os.OpenFile(*logFile, os.O_CREATE|os.O_WRONLY, 0644)
@@ -58,7 +59,7 @@ func main() {
 		}
 		defer logFile.Close()
 
-		log.SetOutput(logFile)
+		logger.SetOutput(logFile)
 	}
 
 	// We expect to take out input from stdin, but allow the user to specify an auto-response input file
@@ -78,7 +79,7 @@ func main() {
 	}
 
 	// Create the environment for the UCI engine
-	uciConfiguration := uci.NewConfiguration(*debugFlag)
+	uciConfiguration := uci.NewConfiguration()
 
 	// Input loop
 	for {

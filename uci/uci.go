@@ -1,10 +1,9 @@
 package uci
 
 import (
-	"log"
-
 	// Internal references
 	"goche/identification"
+	"goche/logger"
 	"goche/status"
 	"goche/utility"
 )
@@ -34,11 +33,11 @@ type configuration struct {
 // - debug: whether to enable debug logging by default
 //
 // Returns a pointer to the newly created configuration object.
-func NewConfiguration(debug bool) *configuration {
+func NewConfiguration() *configuration {
 	utility.WriteInfoString("Hello from %s version %s", identification.GetEngineName(), identification.GetVersionName())
 	return &configuration{
 		uciok:                     false,
-		debug:                     debug,
+		debug:                     false,
 		registrationStatus:        status.Checking,
 		copyProtectionStatus:      status.Checking,
 		registrationWarningIssued: false,
@@ -61,14 +60,12 @@ func ProcessCommand(configuration *configuration, input string) bool {
 		return true
 	}
 
-	if configuration.debug {
-		log.Printf("Received %s", command)
-	}
+	logger.Debug("Received '%s'", command)
 
 	// Check for registration
 	if configuration.registrationStatus == status.Error {
-		if configuration.uciok {
-			if !configuration.registrationWarningIssued {
+		if !configuration.registrationWarningIssued {
+			if configuration.uciok {
 				if command != "register" {
 					configuration.registrationWarningIssued = true
 					utility.WriteInfoString("The engine is not registered. Use 'register' to register your engine.")
@@ -80,8 +77,11 @@ func ProcessCommand(configuration *configuration, input string) bool {
 	// TODO refine this
 	if configuration.copyProtectionStatus == status.Error {
 		if configuration.uciok {
-			utility.WriteInfoString("The engine copy protection status is not ok. Use 'copyprotection' to enable it.")
+			logger.Error("The engine copy protection status is not ok")
+			utility.WriteInfoString("The engine copy protection status is not ok")
 
+			// Cause the engine to shut down
+			// TODO is this the right thing to do?
 			return false
 		}
 	}
@@ -92,7 +92,12 @@ func ProcessCommand(configuration *configuration, input string) bool {
 
 // Process 'debug'
 func debugCommand(configuration *configuration, arguments string) bool {
+	// Note that this is for verbosity in sending info strings to the caller,
+	// not for our own logging, which is handled by the logger package
 	configuration.debug = arguments == "on"
+
+	utility.WriteInfoString("Debug mode %s", utility.If(configuration.debug, "enabled", "disabled"))
+
 	return true
 }
 
@@ -105,10 +110,17 @@ func quitCommand(configuration *configuration, _ string) bool {
 
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
+	if configuration.uciok {
+		// Log as error as this is a non-conformance with the UCI spec
+		logger.Error("Ignoring duplicate 'uci' command")
+	}
+
 	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
 	utility.WriteUciOk()
 
 	checkRegistration(configuration)
+
+	configuration.uciok = true
 
 	return true
 }
