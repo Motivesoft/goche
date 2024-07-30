@@ -14,6 +14,7 @@ import (
 
 // These may be replaced at build time
 var applicationName string = "gochu"
+var authorName string = "Ian Brown"
 var versionName string = "unknown"
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 	}
 
 	// Create the environment for the UCI engine
-	uciConfiguration := uci.NewConfiguration()
+	uciConfiguration := uci.NewConfiguration(applicationName, authorName)
 
 	// Input loop
 	for {
