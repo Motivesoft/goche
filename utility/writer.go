@@ -1,6 +1,11 @@
 package utility
 
-import "fmt"
+import (
+	"fmt"
+
+	// Internal references
+	"goche/status"
+)
 
 // Write the engine identification information
 func WriteId(engineName string, authorName string) {
@@ -12,6 +17,11 @@ func WriteId(engineName string, authorName string) {
 func WriteInfoString(format string, args ...interface{}) {
 	information := fmt.Sprintf(format, args...)
 	write("info string %s", information)
+}
+
+// Write the registration status
+func WriteRegistrationStatus(status status.Status) {
+	write("registration %s", status)
 }
 
 // Write the 'uciok' message

@@ -5,6 +5,7 @@ import (
 
 	// Internal references
 	"goche/identification"
+	"goche/status"
 	"goche/utility"
 )
 
@@ -16,16 +17,11 @@ var commands = map[string]Command{
 	"uci":   uciCommand,
 }
 
-type Status string
-
-const (
-	Ok       Status = "ok"
-	Error    Status = "error"
-	Checking Status = "checking"
-)
-
 type configuration struct {
-	debug bool
+	uciok                bool
+	debug                bool
+	registrationStatus   status.Status
+	copyProtectionStatus status.Status
 }
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
@@ -37,7 +33,10 @@ type configuration struct {
 func NewConfiguration(debug bool) *configuration {
 	utility.WriteInfoString("Hello from %s version %s", identification.GetEngineName(), identification.GetVersionName())
 	return &configuration{
-		debug: debug,
+		uciok:                false,
+		debug:                debug,
+		registrationStatus:   status.Checking,
+		copyProtectionStatus: status.Checking,
 	}
 }
 
@@ -61,6 +60,17 @@ func ProcessCommand(configuration *configuration, input string) bool {
 		log.Printf("Received %s", command)
 	}
 
+	if configuration.registrationStatus == status.Error {
+		if configuration.uciok {
+			if command != "register" {
+				utility.WriteInfoString("The engine is not registered. Use 'register' to register your engine.")
+
+				// TODO decide if we want to be this strict or not
+				return true
+			}
+		}
+	}
+
 	// Call the appropriate command handler
 	return commands[command](configuration, arguments)
 }
@@ -82,5 +92,26 @@ func quitCommand(configuration *configuration, _ string) bool {
 func uciCommand(configuration *configuration, _ string) bool {
 	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
 	utility.WriteUciOk()
+
+	checkRegistration(configuration)
+
 	return true
+}
+
+func registerCommand(configuration *configuration, _ string) bool {
+	configuration.registrationStatus = status.Ok
+	return true
+}
+
+func checkRegistration(configuration *configuration) {
+	utility.WriteRegistrationStatus(configuration.registrationStatus)
+
+	if configuration.registrationStatus == status.Checking {
+
+		// TODO - check for registration and reset the status flag
+		configuration.registrationStatus = status.Ok
+
+		// Notify the change in status
+		utility.WriteRegistrationStatus(configuration.registrationStatus)
+	}
 }
