@@ -1,16 +1,20 @@
 package uci
 
 import (
+
 	// Internal references
+	"fmt"
 	"goche/identification"
 	"goche/logger"
 	"goche/status"
 	"goche/utility"
+	"strconv"
 )
 
 type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
+	// Core UCI commands
 	"debug":      debugCommand,
 	"go":         goCommand,
 	"isready":    isreadyCommand,
@@ -22,6 +26,9 @@ var commands = map[string]Command{
 	"stop":       stopCommand,
 	"uci":        uciCommand,
 	"ucinewgame": ucinewgameCommand,
+
+	// Bespoke UCI commands
+	"perft": perftCommand,
 }
 
 type configuration struct {
@@ -132,6 +139,61 @@ func isreadyCommand(configuration *configuration, _ string) bool {
 	// TODO check any ongoing activities and wait if necessary
 
 	utility.WriteReadyOk()
+	return true
+}
+
+func perftCommand(configuration *configuration, arguments string) bool {
+	// TODO implement this
+
+	/*
+	   std::cout << "  perft [depth]         - perform a search using a depth and the standard start position" << std::endl;
+	   std::cout << "  perft [depth] [fen]   - perform a search using a depth and FEN string" << std::endl;
+	   std::cout << "  perft fen [fen]       - perform a search using a FEN string with expected results" << std::endl;
+	   std::cout << "  perft file [filename] - perform searches read from a file as FEN strings with expected results" << std::endl;
+	*/
+
+	keyword, values := utility.SplitNextWord(arguments)
+
+	if keyword == "" {
+		// TODO consider hijacking this to run a pre-determined set of perft tests
+		logger.Error("Missing perft command arguments")
+		return true
+	}
+
+	// Support:
+	// - perft [depth]         - perform a search using a depth and the standard start position
+	// - perft [depth] [fen]   - perform a search using a depth and FEN string
+	if depth, err := strconv.Atoi(keyword); err == nil {
+		if values == "" {
+			values = FenStartingPosition
+		}
+
+		if err = PerftDepth(depth, values); err != nil {
+			logger.Error("Error performing perft: %s", err)
+		}
+	} else if values != "" {
+		// Support:
+		// - perft fen [fen]       - perform a search using a FEN string containing expected results
+		// - perft file [filename] - perform searches read from a file as FEN strings containing expected results
+		switch keyword {
+		case "fen":
+			err = PerftWithFen(values)
+
+		case "file":
+			err = PerftWithFile(values)
+
+		default:
+			err = fmt.Errorf("unknown command: %s", keyword)
+		}
+
+		if err != nil {
+			logger.Error("Error performing perft: %s", err)
+		}
+	} else {
+		err = fmt.Errorf("incomplete or invalid command: %s", arguments)
+		logger.Error("Error performing perft: %s", err)
+	}
+
 	return true
 }
 
