@@ -62,12 +62,26 @@ func NewConfiguration() *configuration {
 func ProcessCommand(configuration *configuration, input string) bool {
 	command, arguments := utility.SplitNextWord(input)
 
-	if command == "" || commands[command] == nil {
-		// Illegal commands are silently ignored
+	if command == "" {
 		return true
 	}
 
-	logger.Debug("Received '%s'", command)
+	if commands[command] == nil {
+		// Illegal commands are reported and ignored
+		logger.Error("Unknown command '%s'", command)
+
+		if configuration.debug {
+			utility.WriteInfoString("Unknown command '%s'", command)
+		}
+
+		return true
+	}
+
+	logger.Debug("Received '%s' command", command)
+
+	if configuration.debug {
+		utility.WriteInfoString("Received '%s' command", command)
+	}
 
 	// Check for registration
 	if configuration.registrationStatus == status.Error {
@@ -109,6 +123,8 @@ func debugCommand(configuration *configuration, arguments string) bool {
 }
 
 func goCommand(configuration *configuration, _ string) bool {
+	// TODO implement this
+
 	return true
 }
 
@@ -120,22 +136,25 @@ func isreadyCommand(configuration *configuration, _ string) bool {
 }
 
 func ponderhitCommand(configuration *configuration, _ string) bool {
+	// TODO implement this
+
 	return true
 }
 
 func positionCommand(configuration *configuration, _ string) bool {
+	// TODO implement this
+
 	return true
 }
 
 // Process 'quit'
 func quitCommand(configuration *configuration, _ string) bool {
-	// TODO - check for, and terminate running threads etc
+	// TODO - check for, and terminate running threads etc, with no sending of bestmove
 
 	return false
 }
 
 func registerCommand(configuration *configuration, arguments string) bool {
-
 	// TODO create a registration object and do something useful with the name/code used here
 
 	keyword, _ := utility.SplitNextWord(arguments)
@@ -148,6 +167,10 @@ func registerCommand(configuration *configuration, arguments string) bool {
 
 	case "code":
 		configuration.registrationStatus = status.Ok
+
+	default:
+		configuration.registrationStatus = status.Error
+		logger.Error("Malformed register command arguments: %s", arguments)
 	}
 
 	// Confirm the change in status
@@ -160,6 +183,8 @@ func setoptionCommand(configuration *configuration, arguments string) bool {
 	optionName, _ := utility.SplitNextWord(arguments)
 	if optionName != "" {
 		logger.Warn("Unexpected attempt to configure '%s'", optionName)
+
+		utility.WriteInfoString("Unknown option '%s'", optionName)
 	} else {
 		logger.Error("Malformed setoption command")
 	}
@@ -168,6 +193,8 @@ func setoptionCommand(configuration *configuration, arguments string) bool {
 }
 
 func stopCommand(configuration *configuration, _ string) bool {
+	// TODO see if there is anything ongoing, and terminate it, including causing bestmove to be issued
+
 	return true
 }
 
@@ -175,7 +202,11 @@ func stopCommand(configuration *configuration, _ string) bool {
 func uciCommand(configuration *configuration, _ string) bool {
 	if configuration.uciok {
 		// Log as error as this is a non-conformance with the UCI spec
-		logger.Error("Ignoring duplicate 'uci' command")
+		logger.Error("'uci' command already issued")
+
+		if configuration.debug {
+			utility.WriteInfoString("'uci' command already issued")
+		}
 	}
 
 	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
