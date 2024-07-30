@@ -30,11 +30,14 @@ type configuration struct {
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
 //
+// Parameters:
+// - debug: whether to enable debug logging by default
+//
 // Returns a pointer to the newly created configuration object.
-func NewConfiguration() *configuration {
+func NewConfiguration(debug bool) *configuration {
 	utility.WriteInfoString("Hello from %s version %s", identification.GetEngineName(), identification.GetVersionName())
 	return &configuration{
-		debug: true,
+		debug: debug,
 	}
 }
 
