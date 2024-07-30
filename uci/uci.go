@@ -11,11 +11,12 @@ import (
 type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
-	"debug":    debugCommand,
-	"quit":     quitCommand,
-	"isready":  isreadyCommand,
-	"register": registerCommand,
-	"uci":      uciCommand,
+	"debug":     debugCommand,
+	"quit":      quitCommand,
+	"isready":   isreadyCommand,
+	"register":  registerCommand,
+	"setoption": setoptionCommand,
+	"uci":       uciCommand,
 }
 
 type configuration struct {
@@ -113,6 +114,18 @@ func isreadyCommand(configuration *configuration, _ string) bool {
 	// TODO check any ongoing activities and wait if necessary
 
 	utility.WriteReadyOk()
+	return true
+}
+
+func setoptionCommand(configuration *configuration, arguments string) bool {
+	// Currently no options are supported
+	optionName, _ := utility.SplitNextWord(arguments)
+	if optionName != "" {
+		logger.Warn("Unexpected attempt to configure '%s'", optionName)
+	} else {
+		logger.Error("Malformed setoption command")
+	}
+
 	return true
 }
 
