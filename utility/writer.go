@@ -19,6 +19,11 @@ func WriteInfoString(format string, args ...interface{}) {
 	write("info string %s", information)
 }
 
+// Write 'readyok'
+func WriteReadyOk() {
+	write("readyok")
+}
+
 // Write the registration status
 func WriteRegistrationStatus(status status.Status) {
 	write("registration %s", status)

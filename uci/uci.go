@@ -13,6 +13,7 @@ type Command func(*configuration, string) bool
 var commands = map[string]Command{
 	"debug":    debugCommand,
 	"quit":     quitCommand,
+	"isready":  isreadyCommand,
 	"register": registerCommand,
 	"uci":      uciCommand,
 }
@@ -108,6 +109,13 @@ func quitCommand(configuration *configuration, _ string) bool {
 	return false
 }
 
+func isreadyCommand(configuration *configuration, _ string) bool {
+	// TODO check any ongoing activities and wait if necessary
+
+	utility.WriteReadyOk()
+	return true
+}
+
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
 	if configuration.uciok {
@@ -116,8 +124,12 @@ func uciCommand(configuration *configuration, _ string) bool {
 	}
 
 	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
+
+	// TODO write any options we have
+
 	utility.WriteUciOk()
 
+	// Do the registration stuff
 	checkRegistration(configuration)
 
 	configuration.uciok = true
