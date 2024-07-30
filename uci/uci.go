@@ -8,12 +8,14 @@ import (
 type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
-	"quit": quitCommand,
-	"uci":  uciCommand,
+	"debug": debugCommand,
+	"quit":  quitCommand,
+	"uci":   uciCommand,
 }
 
 type configuration struct {
-	debug bool
+	debug  bool
+	writer utility.Writer
 }
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
@@ -21,7 +23,8 @@ type configuration struct {
 // Returns a pointer to the newly created configuration object.
 func NewConfiguration() *configuration {
 	return &configuration{
-		debug: true,
+		debug:  true,
+		writer: utility.ConsoleWriter{},
 	}
 }
 
@@ -49,12 +52,23 @@ func ProcessCommand(configuration *configuration, input string) bool {
 	return commands[command](configuration, arguments)
 }
 
+// Process 'debug'
+func debugCommand(configuration *configuration, arguments string) bool {
+	configuration.debug = arguments == "on"
+	return true
+}
+
 // Process 'quit'
 func quitCommand(configuration *configuration, _ string) bool {
+	// TODO - check for, and terminate running threads etc
+
 	return false
 }
 
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
+
+	configuration.writer.WriteUciOk()
+
 	return true
 }
