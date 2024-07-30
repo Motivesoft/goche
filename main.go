@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,6 +15,8 @@ import (
 )
 
 func main() {
+	log.SetOutput(os.Stderr)
+
 	// Configure the small number of command line arguments
 	inputFile := flag.String("i", "", "filename of UCI commands for testing purposes")
 	helpFlag := flag.Bool("h", false, "show this help message and exit")

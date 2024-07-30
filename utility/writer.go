@@ -2,33 +2,25 @@ package utility
 
 import "fmt"
 
-// Define the Writer interface
-type Writer interface {
-	WriteUciOk()
-	WriteInfoString(information string)
-	WriteId(engineName string, authorName string)
+// Write the engine identification information
+func WriteId(engineName string, authorName string) {
+	write("id name %s", engineName)
+	write("id author %s", authorName)
 }
 
-// Define a concrete type that implements the Writer interface
-type ConsoleWriter struct{}
-
-// Implement the Write method for ConsoleWriter
-func (cw ConsoleWriter) WriteId(engineName string, authorName string) {
-	cw.write("id name " + engineName)
-	cw.write("id author " + authorName)
+// Write an 'info string'
+func WriteInfoString(format string, args ...interface{}) {
+	information := fmt.Sprintf(format, args...)
+	write("info string %s", information)
 }
 
-// Implement the Write method for ConsoleWriter
-func (cw ConsoleWriter) WriteInfoString(information string) {
-	cw.write("info string " + information)
+// Write the 'uciok' message
+func WriteUciOk() {
+	write("uciok")
 }
 
-// Implement the Write method for ConsoleWriter
-func (cw ConsoleWriter) WriteUciOk() {
-	cw.write("uciok")
-}
-
-// Implement the Write method for ConsoleWriter
-func (cw ConsoleWriter) write(data string) {
-	fmt.Println(data)
+// Internal print function
+func write(format string, args ...interface{}) {
+	fmt.Printf(format, args...)
+	fmt.Println()
 }

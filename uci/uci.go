@@ -25,17 +25,16 @@ const (
 )
 
 type configuration struct {
-	debug  bool
-	writer utility.Writer
+	debug bool
 }
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
 //
 // Returns a pointer to the newly created configuration object.
 func NewConfiguration() *configuration {
+	utility.WriteInfoString("Hello from %s version %s", identification.GetEngineName(), identification.GetVersionName())
 	return &configuration{
-		debug:  true,
-		writer: utility.ConsoleWriter{},
+		debug: true,
 	}
 }
 
@@ -78,7 +77,7 @@ func quitCommand(configuration *configuration, _ string) bool {
 
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
-	configuration.writer.WriteId(identification.GetEngineName(), identification.GetAuthorName()) //configuration.authorName)
-	configuration.writer.WriteUciOk()
+	utility.WriteId(identification.GetEngineName(), identification.GetAuthorName())
+	utility.WriteUciOk()
 	return true
 }
