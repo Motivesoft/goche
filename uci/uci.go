@@ -4,6 +4,7 @@ import (
 	"log"
 
 	// Internal references
+	"goche/identification"
 	"goche/utility"
 )
 
@@ -77,9 +78,7 @@ func quitCommand(configuration *configuration, _ string) bool {
 
 // Process 'uci'
 func uciCommand(configuration *configuration, _ string) bool {
-
-	configuration.writer.WriteId(GetEngineName(), GetAuthorName()) //configuration.authorName)
+	configuration.writer.WriteId(identification.GetEngineName(), identification.GetAuthorName()) //configuration.authorName)
 	configuration.writer.WriteUciOk()
-
 	return true
 }

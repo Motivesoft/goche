@@ -1,4 +1,4 @@
-package uci
+package identification
 
 // These may be replaced at build time
 var engineName string = "goche"

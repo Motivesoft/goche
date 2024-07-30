@@ -24,5 +24,5 @@ for %%p in (%PLATFORMS%) do (
     set GOOS=%%p
     set GOARCH=amd64
     
-    go build -ldflags "-X goche/uci.engineName=%NAME% -X goche/uci.versionName=%VERSION%" -o %NAME%-!GOOS!-!GOARCH!-%VERSION%!EXTENSION! .
+    go build -ldflags "-X goche/identification.engineName=%NAME% -X goche/identification.versionName=%VERSION%" -o %NAME%-!GOOS!-!GOARCH!-%VERSION%!EXTENSION! .
 )

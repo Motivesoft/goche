@@ -9,6 +9,7 @@ import (
 	"runtime"
 
 	// Internal references
+	"goche/identification"
 	"goche/uci"
 )
 
@@ -36,7 +37,7 @@ func main() {
 
 	// Handle -v
 	if *versionFlag {
-		fmt.Printf("%s version %s (%s/%s)\n", uci.GetEngineName(), uci.GetVersionName(), runtime.GOOS, runtime.GOARCH)
+		fmt.Printf("%s version %s (%s/%s)\n", identification.GetEngineName(), identification.GetVersionName(), runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
