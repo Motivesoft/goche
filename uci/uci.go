@@ -12,9 +12,10 @@ import (
 type Command func(*configuration, string) bool
 
 var commands = map[string]Command{
-	"debug": debugCommand,
-	"quit":  quitCommand,
-	"uci":   uciCommand,
+	"debug":    debugCommand,
+	"quit":     quitCommand,
+	"register": registerCommand,
+	"uci":      uciCommand,
 }
 
 type configuration struct {
@@ -22,6 +23,9 @@ type configuration struct {
 	debug                bool
 	registrationStatus   status.Status
 	copyProtectionStatus status.Status
+
+	// Transient
+	registrationWarningIssued bool
 }
 
 // NewConfiguration creates a new configuration object with the debug flag set to false.
@@ -33,10 +37,11 @@ type configuration struct {
 func NewConfiguration(debug bool) *configuration {
 	utility.WriteInfoString("Hello from %s version %s", identification.GetEngineName(), identification.GetVersionName())
 	return &configuration{
-		uciok:                false,
-		debug:                debug,
-		registrationStatus:   status.Checking,
-		copyProtectionStatus: status.Checking,
+		uciok:                     false,
+		debug:                     debug,
+		registrationStatus:        status.Checking,
+		copyProtectionStatus:      status.Checking,
+		registrationWarningIssued: false,
 	}
 }
 
@@ -60,14 +65,24 @@ func ProcessCommand(configuration *configuration, input string) bool {
 		log.Printf("Received %s", command)
 	}
 
+	// Check for registration
 	if configuration.registrationStatus == status.Error {
 		if configuration.uciok {
-			if command != "register" {
-				utility.WriteInfoString("The engine is not registered. Use 'register' to register your engine.")
-
-				// TODO decide if we want to be this strict or not
-				return true
+			if !configuration.registrationWarningIssued {
+				if command != "register" {
+					configuration.registrationWarningIssued = true
+					utility.WriteInfoString("The engine is not registered. Use 'register' to register your engine.")
+				}
 			}
+		}
+	}
+
+	// TODO refine this
+	if configuration.copyProtectionStatus == status.Error {
+		if configuration.uciok {
+			utility.WriteInfoString("The engine copy protection status is not ok. Use 'copyprotection' to enable it.")
+
+			return false
 		}
 	}
 
@@ -98,8 +113,27 @@ func uciCommand(configuration *configuration, _ string) bool {
 	return true
 }
 
-func registerCommand(configuration *configuration, _ string) bool {
-	configuration.registrationStatus = status.Ok
+func registerCommand(configuration *configuration, arguments string) bool {
+
+	// TODO create a registration object and do something useful with the name/code used here
+
+	keyword, _ := utility.SplitNextWord(arguments)
+	switch keyword {
+	case "later":
+		configuration.registrationStatus = status.Ok
+
+	case "name":
+		configuration.registrationStatus = status.Ok
+
+	case "code":
+		configuration.registrationStatus = status.Ok
+	}
+
+	// Reset things
+	configuration.registrationWarningIssued = false
+
+	// Confirm the change in status
+	utility.WriteRegistrationStatus(configuration.registrationStatus)
 	return true
 }
 
