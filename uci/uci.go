@@ -165,17 +165,25 @@ func perftCommand(configuration *configuration, arguments string) bool {
 	// - perft [depth] [fen]   - perform a search using a depth and FEN string
 	// - perft fen [fen]       - perform a search using a FEN string containing expected results
 	// - perft file [filename] - perform searches read from a file as FEN strings containing expected results
+	//
+	// Any of the above commands may begin with '-divide' to indicate that the search should be divided
+	divide := false
+	if keyword == "-divide" {
+		divide = true
+		keyword, values = utility.SplitNextWord(values)
+	}
+
 	depth, err := strconv.Atoi(keyword)
 	if err == nil {
 		if values == "" {
 			values = FenStartingPosition
 		}
 
-		err = PerftDepth(depth, values)
+		err = PerftDepth(depth, values, divide)
 	} else if keyword == "fen" {
-		err = PerftWithFen(values)
+		err = PerftWithFen(values, divide)
 	} else if keyword == "file" {
-		err = PerftWithFile(values)
+		err = PerftWithFile(values, divide)
 	} else {
 		err = fmt.Errorf("unknown command: %s", keyword)
 	}
