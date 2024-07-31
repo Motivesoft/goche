@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Perform a search to a depth with a FEN string and display the results
@@ -76,11 +77,6 @@ func PerftWithFile(filename string, divide bool) error {
 	}
 
 	return nil
-}
-
-func perftRun(depth int, fen string, divide bool) (int, error) {
-	//return 0, fmt.Errorf("perft not implemented")
-	return 0, nil
 }
 
 func perftFen(fenWithResults string, divide bool) error {
@@ -171,4 +167,74 @@ func getDepthAndExpected(expected string) (int, int, error) {
 	}
 
 	return depth, count, nil
+}
+
+func perftRun(depth int, fen string, divide bool) (int, error) {
+	// Pseudo code:
+	// 	- Create board from fen
+	//		- return error on fail
+	//  - Start timer
+	//  	- Run search - with or without 'divide'
+	//  - Stop timer
+	//  - Print timing results
+	//  - Return number of nodes searched
+
+	board, err := NewBoard(fen)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create board")
+	}
+
+	start := time.Now()
+
+	var nodes int
+	if divide {
+		nodes, err = search(board, depth, divide)
+	} else {
+		nodes, err = search(board, depth, divide)
+	}
+
+	if err != nil {
+		return 0, fmt.Errorf("move search failed: %w", err)
+	}
+
+	elapsed := time.Since(start)
+	fmt.Printf("  Depth: %3d. Nodes: %12d. Time: %s\n", depth, nodes, elapsed)
+
+	return nodes, nil
+}
+
+func search(board *Board, depth int, divide bool) (int, error) {
+	nodes := 0
+
+	if depth == 0 {
+		return 1, nil
+	}
+
+	moveList := make([]uint, 0, 256)
+
+	moveList, err := board.GetMoves(moveList)
+	if err != nil {
+		return 0, fmt.Errorf("move generation failed: %w", err)
+	}
+
+	for i := 0; i < len(moveList); i++ {
+		move := moveList[i]
+
+		undo := board.MakeMove(move)
+
+		moveNodes, err := search(board, depth-1, false)
+		if err != nil {
+			return 0, err
+		}
+
+		nodes += moveNodes
+
+		if divide {
+			fmt.Printf("  %3d : %d : %p\n", move, moveNodes, board)
+		}
+
+		board.UnmakeMove(undo)
+	}
+
+	return nodes, nil
 }

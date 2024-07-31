@@ -30,3 +30,46 @@ func NewBoard(fen string) (*Board, error) {
 func (board *Board) ToPlay() Color {
 	return board.toPlay
 }
+
+func (board *Board) GetMoves(moveList []uint) ([]uint, error) {
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7, 8)
+	moveList = append(moveList, 1, 2, 3, 4, 5, 6, 7)
+	return moveList, nil
+}
+
+func (b *Board) MakeMove(move uint) string {
+	return ""
+}
+
+func (b *Board) UnmakeMove(undo string) {
+}
