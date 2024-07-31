@@ -59,11 +59,15 @@ func PerftWithFile(filename string, divide bool) error {
 
 	// Read the file line by line
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.TrimSpace(scanner.Text())
 
-		if line == "" {
-			perftFen(line, divide)
+		// Skip empty lines and comment lines - but print them as they might be in the file for formatting purposes
+		if line == "" || strings.HasPrefix(line, "#") {
+			fmt.Println(line)
+			continue
 		}
+
+		perftFen(line, divide)
 	}
 
 	// Check for any errors during scanning
@@ -90,7 +94,8 @@ func perftFen(fenWithResults string, divide bool) error {
 	// - rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1,20,400,...
 
 	type expectedResults struct {
-		depth, moveCount int
+		depth     int
+		moveCount int
 	}
 
 	var expected []expectedResults
@@ -138,12 +143,13 @@ func perftFen(fenWithResults string, divide bool) error {
 			return fmt.Errorf("run failed: %w", err)
 		}
 
-		fmt.Printf("  Depth: %3d. Expected: %12d. Actual: %12d. %s\n", i, count, result, utility.If(count == result, "PASSED", "FAILED"))
+		fmt.Printf("  Depth: %3d. Expected: %12d. Actual: %12d. %s\n", depth, count, result, utility.If(count == result, "PASSED", "FAILED"))
 	}
 
 	return nil
 }
 
+// Parse 'Ddepth expected' (e.g. 'D2 1000') into depth and expected move count and returns an error on failure
 func getDepthAndExpected(expected string) (int, int, error) {
 	if !strings.HasPrefix(expected, "D") {
 		return 0, 0, fmt.Errorf("expected results must start with 'D'")
