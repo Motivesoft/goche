@@ -2,6 +2,7 @@ package uci
 
 import (
 	// Internal references
+	"bufio"
 	"fmt"
 	"goche/logger"
 	"goche/utility"
@@ -47,9 +48,27 @@ func PerftWithFile(filename string, divide bool) error {
 
 	logger.Debug("perft from file: %s", filename)
 
-	_, err := os.Open(filename)
+	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	// Create a scanner
+	scanner := bufio.NewScanner(file)
+
+	// Read the file line by line
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if line == "" {
+			perftFen(line, divide)
+		}
+	}
+
+	// Check for any errors during scanning
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error reading file: %w", err)
 	}
 
 	return nil
