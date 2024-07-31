@@ -60,7 +60,7 @@ func perftRun(depth int, fen string, divide bool) (int, error) {
 	return 0, nil
 }
 
-func perftFen(fen string, divide bool) error {
+func perftFen(fenWithResults string, divide bool) error {
 
 	// FEN format is expected to be one of:
 	// - fen;Ddepth expected-at-depth;Ddepth expected-at-depth
@@ -71,57 +71,57 @@ func perftFen(fen string, divide bool) error {
 	// - rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1,20,400,...
 
 	type expectedResults struct {
-		depth, expected int
+		depth, moveCount int
 	}
 
-	//	var expected []expectedResults
+	var expected []expectedResults
+	var fen string
 
-	split := strings.Split(fen, ";")
+	// Extract the expected results from the fen string
+	split := strings.Split(fenWithResults, ";")
 	if len(split) > 1 {
+		fen = split[0]
 		for i := 1; i < len(split); i++ {
 			depth, count, err := getDepthAndExpected(split[i])
 			if err != nil {
-				return fmt.Errorf("badly formatted expected results: %s", fen)
+				return fmt.Errorf("badly formatted expected results: %s", fenWithResults)
 			}
 
-			//			expected = append(expected, expectedResults{depth, count})
-			logger.Debug("perft to depth %d with FEN: %s", depth, fen)
-
-			result, err := perftRun(depth, fen, divide)
-			if err != nil {
-				return fmt.Errorf("run failed: %w", err)
-			}
-
-			fmt.Printf("  Depth: %3d. Expected: %12d. Actual: %12d. %s\n", depth, count, result, utility.If(count == result, "PASSED", "FAILED"))
+			expected = append(expected, expectedResults{depth, count})
 		}
 	} else {
-		split = strings.Split(fen, ",")
+		split = strings.Split(fenWithResults, ",")
 		if len(split) > 1 {
-			for i := 1; i < len(split); i++ {
-				count, err := strconv.Atoi(split[i])
+			fen = split[0]
+			for depth := 1; depth < len(split); depth++ {
+				count, err := strconv.Atoi(split[depth])
 				if err != nil {
-					return fmt.Errorf("badly formatted expected results: %s", fen)
+					return fmt.Errorf("badly formatted expected results: %s", fenWithResults)
 				}
 
-				logger.Debug("perft to depth %d with FEN: %s", i, fen)
-
-				result, err := perftRun(i, fen, divide)
-				if err != nil {
-					return fmt.Errorf("run failed: %w", err)
-				}
-
-				fmt.Printf("  Depth: %3d. Expected: %12d. Actual: %12d. %s\n", i, count, result, utility.If(count == result, "PASSED", "FAILED"))
+				expected = append(expected, expectedResults{depth, count})
 			}
 		} else {
-			return fmt.Errorf("missing expected results: %s", fen)
+			return fmt.Errorf("missing expected results: %s", fenWithResults)
 		}
 	}
 
+	// Now run the actual test
+	for i := 0; i < len(expected); i++ {
+		depth := expected[i].depth
+		count := expected[i].moveCount
+
+		logger.Debug("perft to depth %d with FEN: %s", depth, fen)
+
+		result, err := perftRun(depth, fen, divide)
+		if err != nil {
+			return fmt.Errorf("run failed: %w", err)
+		}
+
+		fmt.Printf("  Depth: %3d. Expected: %12d. Actual: %12d. %s\n", i, count, result, utility.If(count == result, "PASSED", "FAILED"))
+	}
+
 	return nil
-}
-
-func performRun(depth int, fen string) (int, error) {
-
 }
 
 func getDepthAndExpected(expected string) (int, int, error) {
