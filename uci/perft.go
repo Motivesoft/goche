@@ -170,15 +170,6 @@ func getDepthAndExpected(expected string) (int, int, error) {
 }
 
 func perftRun(depth int, fen string, divide bool) (int, error) {
-	// Pseudo code:
-	// 	- Create board from fen
-	//		- return error on fail
-	//  - Start timer
-	//  	- Run search - with or without 'divide'
-	//  - Stop timer
-	//  - Print timing results
-	//  - Return number of nodes searched
-
 	board, err := NewBoard(fen)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create board")
@@ -206,19 +197,26 @@ func perftRun(depth int, fen string, divide bool) (int, error) {
 func search(board *Board, depth int, divide bool) (int, error) {
 	nodes := 0
 
+	// Always return 1 at the root - but I guess this could/should actually be
+	// a check of a pseudo-level moves if our engine return such things?
 	if depth == 0 {
 		return 1, nil
 	}
 
+	// Create an array for possible moves and allocate it to the maximum size necessary
 	moveList := make([]uint, 0, 256)
 
+	// Generate all possible moves
 	moveList, err := board.GetMoves(moveList)
 	if err != nil {
 		return 0, fmt.Errorf("move generation failed: %w", err)
 	}
 
+	// Recurse with each move
 	for i := 0; i < len(moveList); i++ {
 		move := moveList[i]
+
+		// Make the move, search the new position, unmake the move - repeat
 
 		undo := board.MakeMove(move)
 
@@ -229,6 +227,7 @@ func search(board *Board, depth int, divide bool) (int, error) {
 
 		nodes += moveNodes
 
+		// Extra reporting if requested
 		if divide {
 			fmt.Printf("  %3d : %d : %p\n", move, moveNodes, board)
 		}
