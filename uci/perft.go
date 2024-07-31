@@ -107,6 +107,7 @@ func perftFen(fenWithResults string, divide bool) error {
 	}
 
 	// Now run the actual test
+	fmt.Printf("FEN: %s\n", fen)
 	for i := 0; i < len(expected); i++ {
 		depth := expected[i].depth
 		count := expected[i].moveCount
