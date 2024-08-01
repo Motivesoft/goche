@@ -31,3 +31,14 @@ func squareToIndex[numberType NumberType](square string) numberType {
 func indexToSquare[numberType NumberType](index numberType) string {
 	return fmt.Sprintf("%c%c", 'a'+(index%8), '1'+(index/8))
 }
+
+func indexToBitboard[numberType NumberType](index numberType) uint64 {
+	return 1 << index
+}
+
+/*
+func bitboardToIndex[numberType NumberType](bitboard uint64) numberType {
+	// TODO get this from a lookup table or a bitshift
+	return 0
+}
+*/

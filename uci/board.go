@@ -5,6 +5,7 @@ import (
 	"goche/utility"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Internal references
@@ -72,8 +73,8 @@ func NewBoard(fen string) (*Board, error) {
 		fullMoveNumber
 	)
 
-	// We are going to assume that the FEN string is well formed, not least because we can reasonably
-	// assume that it is being called by another piece of software that also conforms to UCI
+	// We are going to assume that the FEN string is more or less well formed, not least because we
+	// expect that it is being provided by another piece of software that also conforms to UCI
 
 	currentComponent := piecePlacement
 	remainder := fen
@@ -82,6 +83,54 @@ func NewBoard(fen string) (*Board, error) {
 		component, remainder := utility.SplitNextWord(remainder)
 		switch currentComponent {
 		case piecePlacement:
+			// Piece placement starts on the 8th rank, 1st file
+			bitboardBit := indexToBitboard(squareToIndex[uint32]("a8"))
+
+			// Parse the piece placement section of the FEN string
+			for _, character := range component {
+				// Line break
+				if character == '/' {
+					bitboardBit -= 8
+					continue
+				}
+
+				// Empty square(s)
+				if unicode.IsDigit(character) {
+					bitboardBit += uint64(character - '0')
+					continue
+				}
+
+				// Piece color
+				if unicode.IsLower(character) {
+					board.blackPieces |= bitboardBit
+				} else if unicode.IsUpper(character) {
+					board.whitePieces |= bitboardBit
+				}
+
+				// Piece type
+				switch unicode.ToUpper(character) {
+				case 'P':
+					board.pawns |= bitboardBit
+
+				case 'N':
+					board.knights |= bitboardBit
+
+				case 'B':
+					board.bishops |= bitboardBit
+
+				case 'R':
+					board.rooks |= bitboardBit
+
+				case 'Q':
+					board.queens |= bitboardBit
+
+				case 'K':
+					board.kings |= bitboardBit
+				}
+
+				bitboardBit++
+			}
+
 		case activeColor:
 			board.gameState |= utility.If(strings.Contains(component, "w"), WhiteMask, BlackMask)
 

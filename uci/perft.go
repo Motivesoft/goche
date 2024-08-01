@@ -172,7 +172,7 @@ func getDepthAndExpected(expected string) (int, int, error) {
 func perftRun(depth int, fen string, divide bool) (int, error) {
 	board, err := NewBoard(fen)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create board")
+		return 0, fmt.Errorf("failed to create board: %w", err)
 	}
 
 	start := time.Now()
