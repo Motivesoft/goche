@@ -25,7 +25,7 @@ func PerftDepth(depth int, fen string, divide bool) error {
 		return fmt.Errorf("run failed: %w", err)
 	}
 
-	fmt.Printf("  Depth: %d. Actual: %d\n", depth, result)
+	fmt.Printf("  Depth: %3d. Actual: %12d\n", depth, result)
 
 	return nil
 }
@@ -189,7 +189,7 @@ func perftRun(depth int, fen string, divide bool) (int, error) {
 	}
 
 	elapsed := time.Since(start)
-	fmt.Printf("  Depth: %3d. Nodes: %12d. Time: %s\n", depth, nodes, elapsed)
+	fmt.Printf("  Depth: %3d. Nodes: %3d. Time: %s\n", depth, nodes, elapsed)
 
 	return nodes, nil
 }
