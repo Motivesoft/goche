@@ -204,7 +204,7 @@ func search(board *Board, depth int, divide bool) (int, error) {
 	}
 
 	// Create an array for possible moves and allocate it to the maximum size necessary
-	moveList := make([]uint, 0, 256)
+	moveList := make([]Move, 0, 256)
 
 	// Generate all possible moves
 	moveList, err := board.GetMoves(moveList)

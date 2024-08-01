@@ -191,17 +191,54 @@ func NewBoard(fen string) (*Board, error) {
 	return board, nil
 }
 
-func (board *Board) GetMoves(moveList []uint) ([]uint, error) {
+func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 	// moveList = append(moveList, ...)
+
+	// OK, so how are we going to do this:
+	// - setup directional variables for whether white or black, or copy the code for each, or something clever
+	// - pseudo legal or fully legal
+	// - return an array or callback per move
+	// - ordered move list (captures and checks, ...)
+	// - attack/defend maps (or whatever they are)
+
+	// Basic implementation for now
+	// Source and Target for player and opponent
+	sourceMask := utility.If(board.gameState&WhiteMask == WhiteMask, board.whitePieces, board.blackPieces)
+	targetMask := utility.If(board.gameState&WhiteMask == WhiteMask, board.blackPieces, board.whitePieces)
+
+	// Generate all possible moves
+	// moveList = append(moveList, board.generatePawnMoves(sourceMask, targetMask)...)
+	moveList = board.generateKnightMoves(moveList, sourceMask, targetMask)
+	// moveList = append(moveList, board.generateBishopMoves(sourceMask, targetMask)...)
+	// moveList = append(moveList, board.generateRookMoves(sourceMask, targetMask)...)
+	// moveList = append(moveList, board.generateQueenMoves(sourceMask, targetMask)...)
+	// moveList = append(moveList, board.generateKingMoves(sourceMask, targetMask)...)
 
 	return moveList, nil
 }
 
-func (b *Board) MakeMove(move uint) string {
-	return ""
+func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, targetMask uint64) []Move {
+
+	return moveList
 }
 
-func (b *Board) UnmakeMove(undo string) {
+func (b *Board) MakeMove(move Move) *Board {
+	// Copy the board state
+	backupBoard := *b
+	return &backupBoard
+}
+
+func (b *Board) UnmakeMove(backupBoard *Board) {
+	// Restore the board state
+	b.whitePieces = backupBoard.whitePieces
+	b.blackPieces = backupBoard.blackPieces
+	b.pawns = backupBoard.pawns
+	b.knights = backupBoard.knights
+	b.bishops = backupBoard.bishops
+	b.rooks = backupBoard.rooks
+	b.queens = backupBoard.queens
+	b.kings = backupBoard.kings
+	b.gameState = backupBoard.gameState
 }
 
 func (b *Board) getFullMoveNumber() uint32 {
