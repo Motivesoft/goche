@@ -32,6 +32,9 @@ const (
 	FullMoveShift  = 22
 	HalfMoveShift  = 12
 	EnPassantShift = 6
+
+	FullMoveLSB = 0b00000000010000000000000000000000
+	HalfMoveLSB = 0b00000000000000000001000000000000
 )
 
 type Board struct {
@@ -79,8 +82,10 @@ func NewBoard(fen string) (*Board, error) {
 	currentComponent := piecePlacement
 	remainder := fen
 
+	var component string
 	for {
-		component, remainder := utility.SplitNextWord(remainder)
+		component, remainder = utility.SplitNextWord(remainder)
+
 		switch currentComponent {
 		case piecePlacement:
 			// Piece placement starts on the 8th rank, 1st file
@@ -149,8 +154,12 @@ func NewBoard(fen string) (*Board, error) {
 			}
 
 		case enPassantSquare:
-			value := squareToIndex[uint32](component)
-			board.setEnPassantIndex(value)
+			if component == "-" {
+				board.clearEnPassantIndex()
+			} else {
+				value := squareToIndex[uint32](component)
+				board.setEnPassantIndex(value)
+			}
 
 		case halfMoveClock:
 			value, _ := strconv.Atoi(component)
@@ -173,6 +182,7 @@ func NewBoard(fen string) (*Board, error) {
 		}
 	}
 
+	board.printBoard()
 	return board, nil
 }
 
@@ -194,13 +204,15 @@ func (b *Board) getFullMoveNumber() uint32 {
 }
 
 func (b *Board) setFullMoveNumber(number uint32) {
-	b.gameState = (b.gameState & FullMoveXOR) | (number << FullMoveShift)
+	// Mask out the current value, shift the new number, and it to size and or it back into the state
+	// The and-to-size step should be unnecessary, but at least means than it prevents a rogue value impacting
+	// any other state bits
+	b.gameState = (b.gameState & FullMoveXOR) | ((number << FullMoveShift) & FullMoveMask)
 }
 
 func (b *Board) incrementFullMoveNumber() {
-	number := (b.gameState % FullMoveMask) >> FullMoveShift
-	number++
-	b.gameState = (b.gameState & FullMoveXOR) | (number << FullMoveShift)
+	// Increment the number in situ
+	b.gameState = (b.gameState & FullMoveXOR) | (((b.gameState & FullMoveMask) + FullMoveLSB) & FullMoveMask)
 }
 
 func (b *Board) getHalfMoveClock() uint32 {
@@ -208,13 +220,14 @@ func (b *Board) getHalfMoveClock() uint32 {
 }
 
 func (b *Board) setHalfMoveClock(number uint32) {
-	b.gameState = (b.gameState & HalfMoveXOR) | (number << HalfMoveShift)
+	// Mask out the current value, shift the new number, and it to size and or it back into the state
+	// The and-to-size step should be unnecessary, but at least means than it prevents a rogue value impacting
+	// any other state bits
+	b.gameState = (b.gameState & HalfMoveXOR) | ((number << HalfMoveShift) & HalfMoveMask)
 }
 
 func (b *Board) incrementHalfMoveClock() {
-	number := (b.gameState % HalfMoveMask) >> HalfMoveShift
-	number++
-	b.gameState = (b.gameState & HalfMoveXOR) | (number << HalfMoveShift)
+	b.gameState = (b.gameState & HalfMoveXOR) | ((b.gameState & HalfMoveMask) + HalfMoveLSB)
 }
 
 func (b *Board) getEnPassantIndex() uint32 {
@@ -227,4 +240,62 @@ func (b *Board) setEnPassantIndex(index uint32) {
 
 func (b *Board) clearEnPassantIndex() {
 	b.gameState = (b.gameState & EnPassantXOR)
+}
+
+func (b *Board) printBoard() {
+	fmt.Println("  ABCDEFGH")
+	fmt.Println("  --------")
+
+	for row := 0; row < 8; row++ {
+		rank := 8 - row
+		fmt.Printf("%d|", rank)
+
+		for column := 0; column < 8; column++ {
+			file := 'a' + column
+
+			if (rank+file)&1 == 0 {
+				fmt.Printf(".")
+			} else {
+				fmt.Printf(" ")
+			}
+		}
+		fmt.Printf("|%d\n", rank)
+	}
+
+	fmt.Println("  --------")
+	fmt.Println("  ABCDEFGH")
+
+	if b.gameState&WhiteMask == WhiteMask {
+		fmt.Printf("White to play\n")
+	} else {
+		fmt.Printf("White to play\n")
+	}
+
+	fmt.Print("Castling rights: ")
+	if b.gameState&CastlingMask_WK == CastlingMask_WK {
+		fmt.Printf("K")
+	}
+	if b.gameState&CastlingMask_WQ == CastlingMask_WQ {
+		fmt.Printf("Q")
+	}
+	if b.gameState&CastlingMask_BK == CastlingMask_BK {
+		fmt.Printf("k")
+	}
+	if b.gameState&CastlingMask_BQ == CastlingMask_BQ {
+		fmt.Printf("q")
+	}
+	fmt.Println()
+
+	fmt.Printf("En passant destination: ")
+	if b.getEnPassantIndex() != 0 {
+		fmt.Printf("%s\n", indexToSquare[uint32](b.getEnPassantIndex()))
+	} else {
+		fmt.Printf("[none]\n")
+	}
+
+	fmt.Printf("Half move clock: %d\n", b.getHalfMoveClock())
+	fmt.Printf("Full move number: %d\n", b.getFullMoveNumber())
+
+	fmt.Printf("Board:     %064b\n", b.whitePieces|b.blackPieces)
+	fmt.Printf("GameState: %032b\n", b.gameState)
 }

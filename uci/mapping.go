@@ -21,7 +21,7 @@ func index32ToSquare(index uint32) string {
 */
 
 type NumberType interface {
-	uint8 | uint32
+	uint8 | uint32 | uint64
 }
 
 func squareToIndex[numberType NumberType](square string) numberType {
