@@ -184,7 +184,10 @@ func NewBoard(fen string) (*Board, error) {
 		}
 	}
 
+	// TODO Remove this debug output
 	board.printBoard()
+	board.printMasks()
+
 	return board, nil
 }
 
@@ -317,13 +320,25 @@ func (b *Board) printBoard() {
 
 	fmt.Printf("Half move clock:   %d\n", b.getHalfMoveClock())
 	fmt.Printf("Full move number:  %d\n", b.getFullMoveNumber())
+	fmt.Println()
+}
 
-	fmt.Printf("Board:     %064b\n", b.pawns)
-	fmt.Printf("Board:     %064b\n", b.knights)
-	fmt.Printf("Board:     %064b\n", b.bishops)
-	fmt.Printf("Board:     %064b\n", b.rooks)
-	fmt.Printf("Board:     %064b\n", b.queens)
-	fmt.Printf("Board:     %064b\n", b.kings)
-	fmt.Printf("Board:     %064b\n", b.whitePieces|b.blackPieces)
-	fmt.Printf("GameState: %032b\n", b.gameState)
+func (b *Board) printMasks() {
+	fmt.Printf("Pawns:      	   %064b\n", b.pawns)
+	fmt.Printf("Knights:    	   %064b\n", b.knights)
+	fmt.Printf("Bishops:    	   %064b\n", b.bishops)
+	fmt.Printf("Rooks:      	   %064b\n", b.rooks)
+	fmt.Printf("Queens:     	   %064b\n", b.queens)
+	fmt.Printf("Kings:      	   %064b\n", b.kings)
+	fmt.Printf("White:      	   %064b\n", b.whitePieces)
+	fmt.Printf("Black:      	   %064b\n", b.blackPieces)
+	fmt.Printf("All:        	   %064b\n", b.whitePieces|b.blackPieces)
+	fmt.Println()
+	fmt.Printf("Game State:        %032b\n", b.gameState)
+	fmt.Printf("Color To Play:     %032b\n", b.gameState&(WhiteMask|BlackMask))
+	fmt.Printf("Castling Rights:   %032b\n", b.gameState&(CastlingMask_WK|CastlingMask_WQ|CastlingMask_BK|CastlingMask_BQ))
+	fmt.Printf("En Passant Square: %032b\n", b.gameState&EnPassantMask)
+	fmt.Printf("Half Move Clock:   %032b\n", b.gameState&HalfMoveMask)
+	fmt.Printf("Full Move Number:  %032b\n", b.gameState&FullMoveMask)
+	fmt.Println()
 }
