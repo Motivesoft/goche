@@ -89,19 +89,21 @@ func NewBoard(fen string) (*Board, error) {
 		switch currentComponent {
 		case piecePlacement:
 			// Piece placement starts on the 8th rank, 1st file
-			bitboardBit := indexToBitboard(squareToIndex[uint32]("a8"))
+			reminderBit := indexToBitboard(squareToIndex[uint32]("a8"))
+			bitboardBit := reminderBit
 
 			// Parse the piece placement section of the FEN string
 			for _, character := range component {
-				// Line break
 				if character == '/' {
-					bitboardBit -= 8
+					// Line break - move to next rank (towards LSB)
+					reminderBit >>= 8
+					bitboardBit = reminderBit
 					continue
 				}
 
 				// Empty square(s)
 				if unicode.IsDigit(character) {
-					bitboardBit += uint64(character - '0')
+					bitboardBit <<= uint64(character - '0')
 					continue
 				}
 
@@ -133,7 +135,7 @@ func NewBoard(fen string) (*Board, error) {
 					board.kings |= bitboardBit
 				}
 
-				bitboardBit++
+				bitboardBit <<= 1
 			}
 
 		case activeColor:
@@ -200,7 +202,7 @@ func (b *Board) UnmakeMove(undo string) {
 }
 
 func (b *Board) getFullMoveNumber() uint32 {
-	return (b.gameState % FullMoveMask) >> FullMoveShift
+	return (b.gameState & FullMoveMask) >> FullMoveShift
 }
 
 func (b *Board) setFullMoveNumber(number uint32) {
@@ -216,7 +218,7 @@ func (b *Board) incrementFullMoveNumber() {
 }
 
 func (b *Board) getHalfMoveClock() uint32 {
-	return (b.gameState % HalfMoveMask) >> HalfMoveShift
+	return (b.gameState & HalfMoveMask) >> HalfMoveShift
 }
 
 func (b *Board) setHalfMoveClock(number uint32) {
@@ -253,10 +255,29 @@ func (b *Board) printBoard() {
 		for column := 0; column < 8; column++ {
 			file := 'a' + column
 
-			if (rank+file)&1 == 0 {
-				fmt.Printf(".")
+			bitboardBit := indexToBitboard(squareToIndex[uint32](fmt.Sprintf("%c%d", file, rank)))
+
+			var piece string
+			if b.pawns&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "P", "p")
+			} else if b.knights&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "N", "n")
+			} else if b.bishops&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "B", "b")
+			} else if b.rooks&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "R", "r")
+			} else if b.queens&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "Q", "q")
+			} else if b.kings&bitboardBit != 0 {
+				piece = utility.If(b.whitePieces&bitboardBit == bitboardBit, "K", "k")
 			} else {
-				fmt.Printf(" ")
+				piece = " "
+			}
+
+			if (rank+file)&1 == 0 {
+				fmt.Printf("\033[40;1m%s\033[0m", piece)
+			} else {
+				fmt.Printf("\033[47;1m%s\033[0m", piece)
 			}
 		}
 		fmt.Printf("|%d\n", rank)
@@ -264,6 +285,7 @@ func (b *Board) printBoard() {
 
 	fmt.Println("  --------")
 	fmt.Println("  ABCDEFGH")
+	fmt.Println()
 
 	if b.gameState&WhiteMask == WhiteMask {
 		fmt.Printf("White to play\n")
@@ -271,7 +293,7 @@ func (b *Board) printBoard() {
 		fmt.Printf("White to play\n")
 	}
 
-	fmt.Print("Castling rights: ")
+	fmt.Print("Castling rights:   ")
 	if b.gameState&CastlingMask_WK == CastlingMask_WK {
 		fmt.Printf("K")
 	}
@@ -286,16 +308,22 @@ func (b *Board) printBoard() {
 	}
 	fmt.Println()
 
-	fmt.Printf("En passant destination: ")
+	fmt.Printf("En passant square: ")
 	if b.getEnPassantIndex() != 0 {
 		fmt.Printf("%s\n", indexToSquare[uint32](b.getEnPassantIndex()))
 	} else {
 		fmt.Printf("[none]\n")
 	}
 
-	fmt.Printf("Half move clock: %d\n", b.getHalfMoveClock())
-	fmt.Printf("Full move number: %d\n", b.getFullMoveNumber())
+	fmt.Printf("Half move clock:   %d\n", b.getHalfMoveClock())
+	fmt.Printf("Full move number:  %d\n", b.getFullMoveNumber())
 
+	fmt.Printf("Board:     %064b\n", b.pawns)
+	fmt.Printf("Board:     %064b\n", b.knights)
+	fmt.Printf("Board:     %064b\n", b.bishops)
+	fmt.Printf("Board:     %064b\n", b.rooks)
+	fmt.Printf("Board:     %064b\n", b.queens)
+	fmt.Printf("Board:     %064b\n", b.kings)
 	fmt.Printf("Board:     %064b\n", b.whitePieces|b.blackPieces)
 	fmt.Printf("GameState: %032b\n", b.gameState)
 }
