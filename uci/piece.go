@@ -12,7 +12,8 @@ type PieceMoveMask struct {
 }
 
 // 64-bit constant masks using this template:
-//  0b0000000000000000000000000000000000000000000000000000000000000000
+//
+//	0b0000000000000000000000000000000000000000000000000000000000000000
 const (
 	WhiteSideOfTheBoardMask       = 0b0000000000000000000000000000000011111111111111111111111111111111
 	WhitePawnPromotionMask        = 0b1111111100000000000000000000000000000000000000000000000000000000
@@ -30,21 +31,21 @@ func init() {
 		for fileIndex := 0; fileIndex < 8; fileIndex++ {
 			squareIndex := rankIndex*8 + fileIndex
 
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex-1)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+2, rankIndex-1)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex+1)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+2, rankIndex+1)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-1, rankIndex-2)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex-2)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-1, rankIndex+2)
-			_ = setIfOnBoard(PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex+2)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex-1)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+2, rankIndex-1)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex+1)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+2, rankIndex+1)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-1, rankIndex-2)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex-2)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-1, rankIndex+2)
+			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex+2)
 		}
 	}
 }
 
-func setIfOnBoard(bitboard uint64, destinationFile int, destinationRank int) bool {
+func setIfOnBoard(bitboard *uint64, destinationFile int, destinationRank int) bool {
 	if destinationFile >= 0 && destinationFile < 8 && destinationRank >= 0 && destinationRank < 8 {
-		bitboard |= 1 << (destinationRank*8 + destinationFile)
+		*bitboard |= 1 << (destinationRank*8 + destinationFile)
 		return true
 	}
 

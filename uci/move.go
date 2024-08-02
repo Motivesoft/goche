@@ -1,5 +1,7 @@
 package uci
 
+import "fmt"
+
 // Move requires:
 // - from square (6 bits for index)
 // - to square (6 bits for index)
@@ -15,4 +17,18 @@ func NewPromotionMove(from, to uint16, promotionPiece uint16) Move {
 
 func NewMove(from, to uint16) Move {
 	return Move(from | (to << 6))
+}
+
+func (m Move) From() uint8 {
+	return uint8(m & 0b111111)
+}
+
+func (m Move) To() uint8 {
+	return uint8((m >> 6) & 0b111111)
+}
+
+func (m Move) PrintMove() {
+	from := m.From()
+	to := m.To()
+	fmt.Printf("%016b %c%c%c%c\n", m, 'a'+from%8, '1'+from/8, 'a'+to%8, '1'+to/8)
 }

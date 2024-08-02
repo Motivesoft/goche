@@ -219,9 +219,8 @@ func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 }
 
 func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64) []Move {
-
 	pieceSet := b.knights
-	pieceSet |= utility.If(b.gameState&WhiteMask == WhiteMask, b.whitePieces, b.blackPieces)
+	pieceSet &= utility.If(b.gameState&WhiteMask == WhiteMask, b.whitePieces, b.blackPieces)
 
 	var pieceIndex int
 	var targetIndex int
@@ -230,10 +229,11 @@ func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64
 
 		targetSquares := PieceMoveMasks.KnightMoveMask[pieceIndex]
 		for bitScanReverse(&targetIndex, targetSquares) {
-			if (1<<targetIndex)&sourceMask > 0 {
+			targetSquares ^= 1 << targetIndex
+
+			if (1<<targetIndex)&sourceMask == 0 {
 				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
 			}
-
 		}
 	}
 
