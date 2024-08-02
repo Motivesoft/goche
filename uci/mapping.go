@@ -1,6 +1,10 @@
 package uci
 
-import "fmt"
+import (
+	"fmt"
+
+	"math/bits"
+)
 
 /*
 func squareToIndex(square string) uint8 {
@@ -25,7 +29,12 @@ type NumberType interface {
 }
 
 func squareToIndex[numberType NumberType](square string) numberType {
-	return numberType((square[0] - 'a') + ((square[1] - '1') * 8))
+	return rankFileToIndex[numberType](square[0]-'a', square[1]-'1')
+	//return numberType((square[0] - 'a') + ((square[1] - '1') * 8))
+}
+
+func rankFileToIndex[numberType NumberType](file byte, rank byte) numberType {
+	return numberType(file + rank*8)
 }
 
 func indexToSquare[numberType NumberType](index numberType) string {
@@ -42,3 +51,18 @@ func bitboardToIndex[numberType NumberType](bitboard uint64) numberType {
 	return 0
 }
 */
+
+func bitScanForward(index *int, mask uint64) bool {
+	if mask == 0 {
+		return false
+	}
+
+	*index = bits.TrailingZeros64(mask)
+
+	return true
+}
+
+func bitScanReverse(index *int, mask uint64) bool {
+	*index = bits.Len64(mask) - 1
+	return *index > 0
+}

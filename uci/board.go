@@ -3,6 +3,7 @@ package uci
 import (
 	"fmt"
 	"goche/utility"
+
 	"strconv"
 	"strings"
 	"unicode"
@@ -217,7 +218,24 @@ func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 	return moveList, nil
 }
 
-func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, targetMask uint64) []Move {
+func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64) []Move {
+
+	pieceSet := b.knights
+	pieceSet |= utility.If(b.gameState&WhiteMask == WhiteMask, b.whitePieces, b.blackPieces)
+
+	var pieceIndex int
+	var targetIndex int
+	for bitScanReverse(&pieceIndex, pieceSet) {
+		pieceSet ^= 1 << pieceIndex
+
+		targetSquares := PieceMoveMasks.KnightMoveMask[pieceIndex]
+		for bitScanReverse(&targetIndex, targetSquares) {
+			if (1<<targetIndex)&sourceMask > 0 {
+				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+			}
+
+		}
+	}
 
 	return moveList
 }

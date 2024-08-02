@@ -8,3 +8,11 @@ package uci
 // TODO Start with 16 bits and then extend later?
 
 type Move uint16
+
+func NewPromotionMove(from, to uint16, promotionPiece uint16) Move {
+	return Move(from | (to << 6) | (promotionPiece << 12))
+}
+
+func NewMove(from, to uint16) Move {
+	return Move(from | (to << 6))
+}
