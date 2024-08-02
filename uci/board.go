@@ -224,13 +224,17 @@ func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64
 
 	var pieceIndex int
 	var targetIndex int
+
+	// For each piece
 	for bitScanReverse(&pieceIndex, pieceSet) {
 		pieceSet ^= 1 << pieceIndex
 
+		// For each potential target square
 		targetSquares := PieceMoveMasks.KnightMoveMask[pieceIndex]
 		for bitScanReverse(&targetIndex, targetSquares) {
 			targetSquares ^= 1 << targetIndex
 
+			// Move can be to all squares unless occupied by our own pieces
 			if (1<<targetIndex)&sourceMask == 0 {
 				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
 			}

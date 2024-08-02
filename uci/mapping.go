@@ -58,11 +58,14 @@ func bitScanForward(index *int, mask uint64) bool {
 	}
 
 	*index = bits.TrailingZeros64(mask)
-
 	return true
 }
 
 func bitScanReverse(index *int, mask uint64) bool {
+	if mask == 0 {
+		return false
+	}
+
 	*index = bits.Len64(mask) - 1
-	return *index > 0
+	return true
 }
