@@ -1,14 +1,15 @@
 package uci
 
 type PieceMoveMask struct {
-	PawnMoveMask     [64]uint64
-	PawnSlideMask    [64]uint64
-	PawnCaptureMask  [64]uint64
-	KnightMoveMask   [64]uint64
-	DiagonalMoveMask [64]uint64
-	StraightMoveMask [64]uint64
-	QueenMoveMask    [64]uint64
-	KingMoveMask     [64]uint64
+	WhitePawnSlideMask   [64]uint64
+	WhitePawnCaptureMask [64]uint64
+	BlackPawnSlideMask   [64]uint64
+	BlackPawnCaptureMask [64]uint64
+	KnightMoveMask       [64]uint64
+	DiagonalMoveMask     [64]uint64
+	StraightMoveMask     [64]uint64
+	QueenMoveMask        [64]uint64
+	KingMoveMask         [64]uint64
 }
 
 // 64-bit constant masks using this template:
@@ -31,6 +32,7 @@ func init() {
 		for fileIndex := 0; fileIndex < 8; fileIndex++ {
 			squareIndex := rankIndex*8 + fileIndex
 
+			// Knight moves
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex-1)
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+2, rankIndex-1)
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-2, rankIndex+1)
@@ -39,6 +41,63 @@ func init() {
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex-2)
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex-1, rankIndex+2)
 			_ = setIfOnBoard(&PieceMoveMasks.KnightMoveMask[squareIndex], fileIndex+1, rankIndex+2)
+
+			// Directional masks forBishop/Rook/Queen moves
+			for r := -1; r <= 1; r++ {
+				for f := -1; f <= 1; f++ {
+					// Straight or diagonal? In either case, go as far as we can and then break
+					if f == 0 || r == 0 {
+						for d := 1; d < 8; d++ {
+							if !setIfOnBoard(&PieceMoveMasks.StraightMoveMask[squareIndex], fileIndex+f*d, rankIndex+r*d) {
+								break
+							}
+						}
+					} else {
+						for d := 1; d < 8; d++ {
+							if !setIfOnBoard(&PieceMoveMasks.DiagonalMoveMask[squareIndex], fileIndex+f*d, rankIndex+r*d) {
+								break
+							}
+						}
+					}
+				}
+			}
+
+			// King moves
+			for r := -1; r <= 1; r++ {
+				for f := -1; f <= 1; f++ {
+					if f == 0 && r == 0 {
+						continue
+					}
+					_ = setIfOnBoard(&PieceMoveMasks.KingMoveMask[squareIndex], fileIndex+f, rankIndex+r)
+				}
+			}
+
+			// Pawn moves - set for both colors
+			if rankIndex > 0 {
+				// White
+				if rankIndex < 7 {
+					_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+1)
+				}
+
+				if rankIndex == 1 {
+					_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+2)
+				}
+
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+
+				// Black
+				if rankIndex > 0 {
+					_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-1)
+				}
+
+				if rankIndex == 6 {
+					_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-2)
+				}
+
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+			}
 		}
 	}
 }
