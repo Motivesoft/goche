@@ -1,5 +1,7 @@
 package uci
 
+import "fmt"
+
 type PieceMoveMask struct {
 	WhitePawnSlideMask   [64]uint64
 	WhitePawnCaptureMask [64]uint64
@@ -72,32 +74,35 @@ func init() {
 				}
 			}
 
-			// Pawn moves - set for both colors
-			if rankIndex > 0 {
-				// White
-				if rankIndex < 7 {
-					_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+1)
-				}
+			// Pawn moves
 
-				if rankIndex == 1 {
-					_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+2)
-				}
-
-				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
-				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
-
-				// Black
-				if rankIndex > 0 {
-					_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-1)
-				}
-
-				if rankIndex == 6 {
-					_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-2)
-				}
-
-				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
-				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+			// White
+			if rankIndex < 7 {
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+1)
 			}
+
+			if rankIndex == 1 {
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+2)
+			}
+
+			_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
+			_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+
+			// Black
+			if rankIndex > 0 {
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-1)
+			}
+
+			if rankIndex == 6 {
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-2)
+			}
+
+			_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
+			_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+
+			fmt.Printf("%c%c \n", 'a'+fileIndex, '1'+rankIndex)
+			printPieceMoveMasks(PieceMoveMasks.WhitePawnSlideMask[squareIndex])
+			fmt.Println()
 		}
 	}
 }
@@ -109,4 +114,18 @@ func setIfOnBoard(bitboard *uint64, destinationFile int, destinationRank int) bo
 	}
 
 	return false
+}
+
+func printPieceMoveMasks(moveMask uint64) {
+	// print the binary representation as an 8x8 grid
+	for rank := 7; rank >= 0; rank-- {
+		for file := 0; file < 8; file++ {
+			if moveMask&(1<<(rank*8+file)) != 0 {
+				fmt.Printf("X ")
+			} else {
+				fmt.Printf("- ")
+			}
+		}
+		fmt.Println()
+	}
 }
