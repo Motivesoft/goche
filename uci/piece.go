@@ -48,7 +48,7 @@ func init() {
 			for r := -1; r <= 1; r++ {
 				for f := -1; f <= 1; f++ {
 					// Straight or diagonal? In either case, go as far as we can and then break
-					if f == 0 || r == 0 {
+					if (f == 0 || r == 0) && f != r {
 						for d := 1; d < 8; d++ {
 							if !setIfOnBoard(&PieceMoveMasks.StraightMoveMask[squareIndex], fileIndex+f*d, rankIndex+r*d) {
 								break
