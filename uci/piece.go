@@ -85,8 +85,10 @@ func init() {
 				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+2)
 			}
 
-			_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
-			_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+			if rankIndex > 0 {
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+			}
 
 			// Black
 			if rankIndex > 0 {
@@ -97,11 +99,13 @@ func init() {
 				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-2)
 			}
 
-			_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex-1, rankIndex+1)
-			_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex+1, rankIndex+1)
+			if rankIndex < 7 {
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex-1, rankIndex-1)
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnCaptureMask[squareIndex], fileIndex+1, rankIndex-1)
+			}
 
 			fmt.Printf("%c%c \n", 'a'+fileIndex, '1'+rankIndex)
-			printPieceMoveMasks(PieceMoveMasks.WhitePawnSlideMask[squareIndex])
+			printPieceMoveMasks(PieceMoveMasks.StraightMoveMask[squareIndex])
 			fmt.Println()
 		}
 	}
