@@ -178,11 +178,7 @@ func perftRun(depth int, fen string, divide bool) (int, error) {
 	start := time.Now()
 
 	var nodes int
-	if divide {
-		nodes, err = search(board, depth, divide)
-	} else {
-		nodes, err = search(board, depth, divide)
-	}
+	nodes, err = search(board, depth, divide)
 
 	if err != nil {
 		return 0, fmt.Errorf("move search failed: %w", err)
@@ -229,7 +225,7 @@ func search(board *Board, depth int, divide bool) (int, error) {
 
 		// Extra reporting if requested
 		if divide {
-			fmt.Printf("  %3d : %d : %p\n", move, moveNodes, board)
+			fmt.Printf("  %s : %d : %p\n", move.ToString(), moveNodes, board)
 		}
 
 		board.UnmakeMove(undo)

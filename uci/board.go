@@ -208,7 +208,7 @@ func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 	targetMask := utility.If(board.gameState&WhiteMask == WhiteMask, board.blackPieces, board.whitePieces)
 
 	// Generate all possible moves
-	// moveList = append(moveList, board.generatePawnMoves(sourceMask, targetMask)...)
+	moveList = board.generatePawnMoves(moveList, sourceMask, targetMask)
 	moveList = board.generateKnightMoves(moveList, sourceMask, targetMask)
 	// moveList = append(moveList, board.generateBishopMoves(sourceMask, targetMask)...)
 	// moveList = append(moveList, board.generateRookMoves(sourceMask, targetMask)...)
@@ -218,9 +218,49 @@ func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 	return moveList, nil
 }
 
+func (b *Board) generatePawnMoves(moveList []Move, sourceMask uint64, targetMask uint64) []Move {
+	anyPiece := sourceMask | targetMask
+	pieceSet := b.pawns & sourceMask
+	direction := utility.If(b.gameState&WhiteMask == WhiteMask, 8, -8)
+
+	var pieceIndex int
+	var targetIndex int
+
+	// For each piece
+	for bitScanReverse(&pieceIndex, pieceSet) {
+		pieceSet ^= 1 << pieceIndex
+
+		targetIndex = pieceIndex + direction
+		if 1<<targetIndex&anyPiece == 0 {
+			moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+
+			// Those that could do this move might also be able to double-slide
+			if PieceMoveMasks.DoubleSlideEligiblePawnMask[pieceIndex]&sourceMask != 0 {
+				targetIndex += direction
+				if 1<<targetIndex&anyPiece == 0 {
+					moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+				}
+			}
+		}
+
+		// Captures, including ep
+
+		// For each potential target square
+		targetSquares := utility.If(b.gameState&WhiteMask == WhiteMask, PieceMoveMasks.WhitePawnCaptureMask[pieceIndex], PieceMoveMasks.BlackPawnCaptureMask[pieceIndex])
+		for bitScanReverse(&targetIndex, targetSquares) {
+			targetSquares ^= 1 << targetIndex
+
+			// Move can be to all squares unless occupied by our own pieces
+			if (1<<targetIndex)&targetMask > 0 || targetIndex == int(b.getEnPassantIndex()) {
+				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+			}
+		}
+	}
+
+	return moveList
+}
 func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64) []Move {
-	pieceSet := b.knights
-	pieceSet &= utility.If(b.gameState&WhiteMask == WhiteMask, b.whitePieces, b.blackPieces)
+	pieceSet := b.knights & sourceMask
 
 	var pieceIndex int
 	var targetIndex int

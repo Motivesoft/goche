@@ -27,6 +27,12 @@ func (m Move) To() uint8 {
 	return uint8((m >> 6) & 0b111111)
 }
 
+func (m Move) ToString() string {
+	from := m.From()
+	to := m.To()
+	return fmt.Sprintf("%016b %c%c%c%c", m, 'a'+from%8, '1'+from/8, 'a'+to%8, '1'+to/8)
+}
+
 func (m Move) PrintMove() {
 	from := m.From()
 	to := m.To()

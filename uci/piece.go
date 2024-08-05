@@ -3,15 +3,18 @@ package uci
 import "fmt"
 
 type PieceMoveMask struct {
-	WhitePawnSlideMask   [64]uint64
-	WhitePawnCaptureMask [64]uint64
-	BlackPawnSlideMask   [64]uint64
-	BlackPawnCaptureMask [64]uint64
-	KnightMoveMask       [64]uint64
-	DiagonalMoveMask     [64]uint64
-	StraightMoveMask     [64]uint64
-	QueenMoveMask        [64]uint64
-	KingMoveMask         [64]uint64
+	WhitePawnSlideMask          [64]uint64
+	WhitePawnDoubleSlideMask    [64]uint64
+	WhitePawnCaptureMask        [64]uint64
+	BlackPawnSlideMask          [64]uint64
+	BlackPawnDoubleSlideMask    [64]uint64
+	BlackPawnCaptureMask        [64]uint64
+	DoubleSlideEligiblePawnMask [64]uint64
+	KnightMoveMask              [64]uint64
+	DiagonalMoveMask            [64]uint64
+	StraightMoveMask            [64]uint64
+	QueenMoveMask               [64]uint64
+	KingMoveMask                [64]uint64
 }
 
 // 64-bit constant masks using this template:
@@ -74,7 +77,7 @@ func init() {
 				}
 			}
 
-			// Pawn moves
+			// Pawn moves - keep capture mask apart from main mask
 
 			// White
 			if rankIndex < 7 {
@@ -82,7 +85,8 @@ func init() {
 			}
 
 			if rankIndex == 1 {
-				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnSlideMask[squareIndex], fileIndex, rankIndex+2)
+				_ = setIfOnBoard(&PieceMoveMasks.WhitePawnDoubleSlideMask[squareIndex], fileIndex, rankIndex+2)
+				_ = setIfOnBoard(&PieceMoveMasks.DoubleSlideEligiblePawnMask[squareIndex], fileIndex, rankIndex)
 			}
 
 			if rankIndex > 0 {
@@ -96,7 +100,8 @@ func init() {
 			}
 
 			if rankIndex == 6 {
-				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnSlideMask[squareIndex], fileIndex, rankIndex-2)
+				_ = setIfOnBoard(&PieceMoveMasks.BlackPawnDoubleSlideMask[squareIndex], fileIndex, rankIndex-2)
+				_ = setIfOnBoard(&PieceMoveMasks.DoubleSlideEligiblePawnMask[squareIndex], fileIndex, rankIndex)
 			}
 
 			if rankIndex < 7 {
