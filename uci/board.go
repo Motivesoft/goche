@@ -210,6 +210,7 @@ func (board *Board) GetMoves(moveList []Move) ([]Move, error) {
 	// Generate all possible moves
 	moveList = board.generatePawnMoves(moveList, sourceMask, targetMask)
 	moveList = board.generateKnightMoves(moveList, sourceMask, targetMask)
+	moveList = board.generateKingMoves(moveList, sourceMask, targetMask)
 	// moveList = append(moveList, board.generateBishopMoves(sourceMask, targetMask)...)
 	// moveList = append(moveList, board.generateRookMoves(sourceMask, targetMask)...)
 	// moveList = append(moveList, board.generateQueenMoves(sourceMask, targetMask)...)
@@ -259,6 +260,7 @@ func (b *Board) generatePawnMoves(moveList []Move, sourceMask uint64, targetMask
 
 	return moveList
 }
+
 func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64) []Move {
 	pieceSet := b.knights & sourceMask
 
@@ -277,6 +279,62 @@ func (b *Board) generateKnightMoves(moveList []Move, sourceMask uint64, _ uint64
 			// Move can be to all squares unless occupied by our own pieces
 			if (1<<targetIndex)&sourceMask == 0 {
 				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+			}
+		}
+	}
+
+	return moveList
+}
+
+func (b *Board) generateKingMoves(moveList []Move, sourceMask uint64, _ uint64) []Move {
+	pieceSet := b.kings & sourceMask
+
+	var pieceIndex int
+	var targetIndex int
+
+	// For each piece
+	for bitScanReverse(&pieceIndex, pieceSet) {
+		pieceSet ^= 1 << pieceIndex
+
+		// For each potential target square
+		targetSquares := PieceMoveMasks.KnightMoveMask[pieceIndex]
+		for bitScanReverse(&targetIndex, targetSquares) {
+			targetSquares ^= 1 << targetIndex
+
+			// Move can be to all squares unless occupied by our own pieces
+			if (1<<targetIndex)&sourceMask == 0 {
+				moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(targetIndex)))
+			}
+		}
+
+		// TODO castling - first, check we're in a position to do so
+		if b.gameState&WhiteMask == WhiteMask {
+			if pieceIndex == 4 { // K on e1
+				if b.canCastleWK() {
+					if sourceMask&WhiteKingsideCastlingEligibilityMask == WhiteKingsideCastlingEligibilityPattern {
+						moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(pieceIndex+2)))
+					}
+				}
+
+				if b.canCastleWQ() {
+					if sourceMask&WhiteQueensideCastlingEligibilityMask == WhiteQueensideCastlingEligibilityPattern {
+						moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(pieceIndex-2)))
+					}
+				}
+			}
+		} else {
+			if pieceIndex == 60 { // K one8
+				if b.canCastleBK() {
+					if sourceMask&BlackKingsideCastlingEligibilityMask == BlackKingsideCastlingEligibilityPattern {
+						moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(pieceIndex+2)))
+					}
+				}
+
+				if b.canCastleBQ() {
+					if sourceMask&BlackQueensideCastlingEligibilityMask == BlackQueensideCastlingEligibilityPattern {
+						moveList = append(moveList, NewMove(uint16(pieceIndex), uint16(pieceIndex-2)))
+					}
+				}
 			}
 		}
 	}
@@ -344,6 +402,22 @@ func (b *Board) setEnPassantIndex(index uint32) {
 
 func (b *Board) clearEnPassantIndex() {
 	b.gameState = (b.gameState & EnPassantXOR)
+}
+
+func (b *Board) canCastleWK() bool {
+	return (b.gameState & CastlingMask_WK) != 0
+}
+
+func (b *Board) canCastleWQ() bool {
+	return (b.gameState & CastlingMask_WQ) != 0
+}
+
+func (b *Board) canCastleBK() bool {
+	return (b.gameState & CastlingMask_BK) != 0
+}
+
+func (b *Board) canCastleBQ() bool {
+	return (b.gameState & CastlingMask_BQ) != 0
 }
 
 func (b *Board) printBoard() {
